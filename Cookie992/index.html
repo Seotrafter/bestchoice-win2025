@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StarPuzzle Valley - Nonogram Adventure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel='icon' href='/src/icons/logo.png' type='image/x-icon'>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#089400',
+                        secondary: '#0076b2',
+                        tertiary: '#155800',
+                        dark: '#000e20',
+                        light: '#ffffff'
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': {
+                                transform: 'translateY(0)'
+                            },
+                            '50%': {
+                                transform: 'translateY(-10px)'
+                            },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        .bg-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23089400' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+
+        .grid-pattern {
+            background-size: 20px 20px;
+            background-image:
+                linear-gradient(to right, rgba(0, 118, 178, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 118, 178, 0.05) 1px, transparent 1px);
+        }
+
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle 4s infinite;
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: 0.2;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+    <!-- Stars background animation -->
+    <div id="stars-container" class="fixed top-0 left-0 w-full h-full z-0 pointer-events-none overflow-hidden"></div>
+
+    <!-- Header -->
+    <header class="sticky top-0 bg-white/90 backdrop-blur-md z-50 shadow-md">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <a href="/" class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center animate-float shadow-lg">
+                        <i class="fas fa-puzzle-piece text-white text-2xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">StarPuzzle Valley</span>
+                </a>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-dark focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="/#features" class="font-medium text-dark hover:text-primary transition-colors">Features</a>
+                    <a href="/#story" class="font-medium text-dark hover:text-primary transition-colors">Story</a>
+                    <a href="/#screenshots" class="font-medium text-dark hover:text-primary transition-colors">Screenshots</a>
+                    <a href="/#testimonials" class="font-medium text-dark hover:text-primary transition-colors">Reviews</a>
+                    <a href="/#download" class="inline-block px-6 py-2.5 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-full shadow-md hover:shadow-lg transition-all">
+                        Download Now
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Mobile Navigation -->
+            <div id="mobile-menu" class="md:hidden hidden bg-white mt-3 rounded-lg shadow-lg animate-pulse-slow">
+                <div class="flex flex-col space-y-3 p-4">
+                    <a href="/#features" class="font-medium text-dark hover:text-primary transition-colors">Features</a>
+                    <a href="/#story" class="font-medium text-dark hover:text-primary transition-colors">Story</a>
+                    <a href="/#screenshots" class="font-medium text-dark hover:text-primary transition-colors">Screenshots</a>
+                    <a href="/#testimonials" class="font-medium text-dark hover:text-primary transition-colors">Reviews</a>
+                    <a href="/#download" class="inline-block px-6 py-2.5 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-full shadow-md hover:shadow-lg transition-all text-center">
+                        Download Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Cookie Policy Header -->
+    <section class="relative py-16 bg-gradient-to-br from-dark to-secondary text-white">
+        <div class="absolute inset-0 opacity-10 grid-pattern"></div>
+        <div class="container mx-auto px-4 relative z-10 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6">Cookie Policy</h1>
+            <p class="text-xl text-white/80 max-w-3xl mx-auto">Learn how StarPuzzle Valley uses cookies to enhance your experience</p>
+        </div>
+    </section>
+
+    <!-- Cookie Policy Content - Part 1 -->
+    <section class="py-12 bg-white">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-primary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">What Are Cookies?</h2>
+                <p class="mb-4 text-dark/80">
+                    Cookies are small text files that are stored on your device (computer, tablet, or mobile) when you visit websites. They are widely used to make websites work more efficiently and provide information to the website owners. Cookies enhance your browsing experience by:
+                </p>
+                <ul class="list-disc pl-8 mb-4 text-dark/80 space-y-2">
+                    <li>Remembering your preferences and settings</li>
+                    <li>Improving site navigation</li>
+                    <li>Helping us understand how you use our website</li>
+                    <li>Enabling personalized content and features</li>
+                </ul>
+                <p class="mb-4 text-dark/80">
+                    StarPuzzle Valley uses cookies to provide you with the best possible experience when visiting our website. This Cookie Policy explains how we use cookies, what types of cookies we use, and how you can control them.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-secondary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">How We Use Cookies</h2>
+                <p class="mb-4 text-dark/80">
+                    When you visit our website, we may automatically collect information about your device, including information about your web browser, IP address, time zone, and some of the cookies installed on your device. Additionally, as you browse the site, we collect information about the individual web pages you view, what websites or search terms referred you to our site, and how you interact with the site.
+                </p>
+                <p class="mb-4 text-dark/80">
+                    We use this information for several purposes:
+                </p>
+                <ul class="list-disc pl-8 mb-4 text-dark/80 space-y-2">
+                    <li>To analyze trends and improve our website</li>
+                    <li>To track users' movements around the site</li>
+                    <li>To gather demographic information about our user base as a whole</li>
+                    <li>To remember your preferences and settings</li>
+                    <li>To personalize your experience</li>
+                    <li>To enable certain functions of the website</li>
+                </ul>
+                <p class="mb-4 text-dark/80">
+                    We do not use cookies to collect personally identifiable information about you. However, if you previously provided personally identifiable information, cookies may be tied to such information.
+                </p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-primary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Types of Cookies We Use</h2>
+                <p class="mb-4 text-dark/80">
+                    StarPuzzle Valley uses different types of cookies for various purposes. These cookies fall into the following categories:
+                </p>
+
+                <div class="bg-primary/5 p-4 rounded-xl mb-4">
+                    <h3 class="font-bold mb-2 text-primary">Necessary Cookies</h3>
+                    <p class="text-dark/80">
+                        These cookies are essential for the website to function properly. They enable core functionality such as security, network management, and account access. You may disable these by changing your browser settings, but this may affect how the website functions.
+                    </p>
+                </div>
+
+                <div class="bg-secondary/5 p-4 rounded-xl mb-4">
+                    <h3 class="font-bold mb-2 text-secondary">Preference Cookies</h3>
+                    <p class="text-dark/80">
+                        These cookies allow us to remember choices you make when you visit our website, such as your language preference or login information. They make your experience more personalized and eliminate the need to set your preferences each time you visit.
+                    </p>
+                </div>
+
+                <div class="bg-primary/5 p-4 rounded-xl mb-4">
+                    <h3 class="font-bold mb-2 text-primary">Analytics Cookies</h3>
+                    <p class="text-dark/80">
+                        These cookies help us understand how visitors interact with our website by collecting and reporting information anonymously. They allow us to count visits and traffic sources so we can measure and improve the performance of our site.
+                    </p>
+                </div>
+
+                <div class="bg-secondary/5 p-4 rounded-xl mb-4">
+                    <h3 class="font-bold mb-2 text-secondary">Marketing Cookies</h3>
+                    <p class="text-dark/80">
+                        These cookies track your online activity to help advertisers deliver more relevant advertising or to limit how many times you see an ad. These cookies can share that information with other organizations or advertisers. These are persistent cookies that will remain on your device until they expire or you delete them.
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-secondary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Third-Party Cookies</h2>
+                <p class="mb-4 text-dark/80">
+                    In addition to our own cookies, we may also use various third-party cookies to report usage statistics, deliver advertisements, and so on. These cookies may include:
+                </p>
+                <ul class="list-disc pl-8 mb-4 text-dark/80 space-y-2">
+                    <li>
+                        <span class="font-bold">Google Analytics:</span> To help us understand how our website is being used and to improve user experience. Google Analytics generates statistical and other information about website use by means of cookies.
+                    </li>
+                    <li>
+                        <span class="font-bold">Google Advertising:</span> Google uses cookies for advertising, including serving and rendering ads, personalizing ads, limiting how many times you see an ad, and measuring the effectiveness of ads.
+                    </li>
+                    <li>
+                        <span class="font-bold">Social Media:</span> If you share our content through social media, those social networks will record that you have done so. If you use social media features on our website, the social media provider may set cookies.
+                    </li>
+                </ul>
+                <p class="mb-4 text-dark/80">
+                    Please note that third parties (including, for example, advertising networks and providers of external services like web traffic analysis services) may also use cookies, over which we have no control. These cookies are likely to be analytical/performance cookies or targeting cookies.
+                </p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-primary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Managing Your Cookie Preferences</h2>
+                <p class="mb-4 text-dark/80">
+                    You can control and/or delete cookies as you wish. You can delete all cookies that are already on your computer, and you can set most browsers to prevent them from being placed. However, if you do this, you may have to manually adjust some preferences every time you visit a site, and some services and functionality may not work as expected.
+                </p>
+                <p class="mb-4 text-dark/80">
+                    Most web browsers allow you to manage your cookie preferences. You can:
+                </p>
+                <ul class="list-disc pl-8 mb-4 text-dark/80 space-y-2">
+                    <li>View the cookies stored on your computer</li>
+                    <li>Allow, block, or delete cookies</li>
+                    <li>Set cookie preferences for your browser</li>
+                </ul>
+                <p class="mb-4 text-dark/80">
+                    Instructions for managing cookies in common browsers:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-primary/5 p-4 rounded-xl">
+                        <h3 class="font-bold mb-2 text-primary">Google Chrome</h3>
+                        <p class="text-dark/80">
+                            Settings > Privacy and security > Cookies and other site data
+                        </p>
+                    </div>
+                    <div class="bg-secondary/5 p-4 rounded-xl">
+                        <h3 class="font-bold mb-2 text-secondary">Mozilla Firefox</h3>
+                        <p class="text-dark/80">
+                            Menu > Options > Privacy & Security > Cookies and Site Data
+                        </p>
+                    </div>
+                    <div class="bg-primary/5 p-4 rounded-xl">
+                        <h3 class="font-bold mb-2 text-primary">Safari</h3>
+                        <p class="text-dark/80">
+                            Preferences > Privacy > Cookies and website data
+                        </p>
+                    </div>
+                    <div class="bg-secondary/5 p-4 rounded-xl">
+                        <h3 class="font-bold mb-2 text-secondary">Microsoft Edge</h3>
+                        <p class="text-dark/80">
+                            Settings > Cookies and site permissions > Cookies and site data
+                        </p>
+                    </div>
+                </div>
+                <p class="mb-4 text-dark/80">
+                    For more information about cookies, including how to see what cookies have been set on your device and how to manage and delete them, visit <a href="https://www.allaboutcookies.org" target="_blank" class="text-primary hover:underline">www.allaboutcookies.org</a>.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-secondary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Your Consent</h2>
+                <p class="mb-4 text-dark/80">
+                    When you visit our website for the first time, we will show you a pop-up notice with information about cookies. By clicking "Accept," you consent to our use of cookies as described in this Cookie Policy. You can change your cookie settings at any time by clicking on the cookie preferences link in the footer of our website.
+                </p>
+                <p class="mb-4 text-dark/80">
+                    If you choose to disable cookies, please be aware that some parts of our website may not function properly. You may not be able to take full advantage of all functionality we offer.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-primary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Changes to Our Cookie Policy</h2>
+                <p class="mb-4 text-dark/80">
+                    We may update our Cookie Policy from time to time. Any changes we make to our Cookie Policy in the future will be posted on this page and, where appropriate, notified to you when you visit our website. The date of the latest update will be displayed at the bottom of the page.
+                </p>
+                <p class="mb-4 text-dark/80">
+                    We encourage you to check this page periodically to stay informed about our use of cookies.
+                </p>
+                <p class="mb-4 text-dark/80">
+                    Last updated: March 10, 2025
+                </p>
+            </div>
+
+            <div class="flex justify-center mt-12 mb-8">
+                <a href="/" class="inline-block px-8 py-4 bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-full shadow-lg hover:shadow-xl transition-all text-lg">
+                    <i class="fas fa-home mr-2"></i> Return to Home
+                </a>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+                <a href="/" class="flex items-center space-x-3 mb-6 md:mb-0">
+                    <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                        <i class="fas fa-puzzle-piece text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold text-white">StarPuzzle Valley</span>
+                </a>
+
+
+            </div>
+
+            <hr class="border-white/10 mb-8">
+
+            <div class="flex flex-col md:flex-row justify-between">
+                <div class="mb-6 md:mb-0">
+                    <p class="text-white/70">© 2025 StarPuzzle Valley. All rights reserved.</p>
+                </div>
+
+                <div class="flex flex-wrap gap-4 md:gap-8">
+                    <a href="/Policy356/" class="text-white/70 hover:text-white transition-colors">Privacy Policy</a>
+                    <a href="/Service347/" class="text-white/70 hover:text-white transition-colors">Terms of Service</a>
+                    <a href="/Cookie992/" class="text-white/70 hover:text-white transition-colors">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Stars background animation
+        function createStars() {
+            const starsContainer = document.getElementById('stars-container');
+            const starCount = 100;
+
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+
+                // Random position
+                const x = Math.floor(Math.random() * 100);
+                const y = Math.floor(Math.random() * 100);
+
+                // Random size
+                const size = Math.random() * 3;
+
+                // Random animation delay
+                const delay = Math.random() * 4;
+
+                star.style.left = `${x}%`;
+                star.style.top = `${y}%`;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.animationDelay = `${delay}s`;
+
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+
+                    // Close mobile menu if open
+                    const mobileMenu = document.getElementById('mobile-menu');
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+
+        // Initialize stars on load
+        window.addEventListener('load', createStars);
+    </script>
+</body>
+
+</html>
+
+
+
+
+<?php
+$cookieConsentHtml = '
+<style>
+.cookie-consent {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 101;
+    background: rgba(0, 14, 32, 0.95); /* Dark color with transparency */
+    backdrop-filter: blur(10px);
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    transform: translateY(100%);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    border-top: 3px solid #089400; /* Primary green color */
+}
+
+.cookie-container {
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.cookie-content {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.cookie-title {
+    font-size: 1.1rem;
+    color: #ffffff;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-right: 1.5rem;
+    margin-bottom: 0;
+    white-space: nowrap;
+}
+
+.cookie-title i {
+    color: #0076b2; /* Secondary blue color */
+    font-size: 1.25rem;
+}
+
+.cookie-text {
+    color: #e6e6e6;
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.5;
+    font-weight: 300; 
+}
+
+.cookie-link {
+    color: #ffffff; /* White text */
+    text-decoration: none;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.cookie-link::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: #089400; /* Primary green color */
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.cookie-link:hover::after {
+    transform: scaleX(1);
+}
+
+.cookie-buttons {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.cookie-button-reject,
+.cookie-button-accept {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 50px; /* Rounded buttons like in the main site */
+}
+
+.cookie-button-reject {
+    background: transparent;
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.cookie-button-reject:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.cookie-button-accept {
+    background: linear-gradient(to right, #089400, #0076b2); /* Gradient like main buttons */
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 10px rgba(8, 148, 0, 0.3);
+}
+
+.cookie-button-accept:hover {
+    background: linear-gradient(to right, #0a7a04, #005f8f);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(8, 148, 0, 0.4);
+}
+
+@media (max-width: 992px) {
+    .cookie-container {
+        flex-direction: column;
+        padding: 1.25rem;
+    }
+
+    .cookie-content {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 1.25rem;
+        width: 100%;
+    }
+
+    .cookie-title {
+        margin-bottom: 0.75rem;
+    }
+
+    .cookie-buttons {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 576px) {
+    .cookie-buttons {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.75rem;
+    }
+    
+    .cookie-button-reject,
+    .cookie-button-accept {
+        width: 100%;
+        text-align: center;
+    }
+}
+</style>
+<div id="cookieConsent" class="cookie-consent">
+    <div class="cookie-container">
+        <div class="cookie-content">
+            <h3 class="cookie-title">
+                <i class="fas fa-cookie-bite"></i>
+                Cookie Policy
+            </h3>
+            <p class="cookie-text">
+                StarPuzzle Valley uses cookies to enhance your gaming experience. By continuing to use our website, you agree to the use of cookies. For more information, you can read our
+                <a href="/Policy356/" class="cookie-link">Privacy Policy</a>,
+                <a href="/Service347/" class="cookie-link">Terms of Service</a>,
+                and
+                <a href="/Cookie992/" class="cookie-link">Cookie Policy</a>.
+            </p>
+        </div>
+        
+        <div class="cookie-buttons">
+            <button id="rejectCookies" class="cookie-button-reject">
+                Reject
+            </button>
+            <button id="acceptCookies" class="cookie-button-accept">
+                Accept
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+   const cookieConsent = document.getElementById("cookieConsent");
+   const acceptBtn = document.getElementById("acceptCookies");
+   const rejectBtn = document.getElementById("rejectCookies");
+   
+   if (!getCookie("aprenderd_cookie_consent")) {
+       setTimeout(() => {
+           cookieConsent.style.transform = "translateX(0)";
+       }, 1000);
+   }
+
+   function getCookie(name) {
+       let matches = document.cookie.match(new RegExp(
+           "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, "\\$1") + "=([^;]*)"
+       ));
+       return matches ? decodeURIComponent(matches[1]) : undefined;
+   }
+   
+   function setCookie(name, value, days) {
+       const date = new Date();
+       date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+       const expires = "; expires=" + date.toUTCString();
+       document.cookie = name + "=" + value + expires + "; path=/; SameSite=Strict; Secure";
+   }
+
+   function handleConsent(consent) {
+       setCookie("aprenderd_cookie_consent", consent, 365);
+       cookieConsent.style.transform = "translateX(120%)";
+       
+       setTimeout(() => {
+           cookieConsent.remove();
+       }, 500);
+   }
+
+   acceptBtn.addEventListener("click", () => handleConsent("accepted"));
+   rejectBtn.addEventListener("click", () => handleConsent("rejected"));
+});
+</script>
+';
+
+if (!isset($_COOKIE["aprenderd_cookie_consent"])) {
+    echo $cookieConsentHtml;
+}
+?>

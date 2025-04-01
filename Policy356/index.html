@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StarPuzzle Valley - Nonogram Adventure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel='icon' href='/src/icons/logo.png' type='image/x-icon'>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#089400',
+                        secondary: '#0076b2',
+                        tertiary: '#155800',
+                        dark: '#000e20',
+                        light: '#ffffff'
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': {
+                                transform: 'translateY(0)'
+                            },
+                            '50%': {
+                                transform: 'translateY(-10px)'
+                            },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        .bg-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23089400' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+
+        .grid-pattern {
+            background-size: 20px 20px;
+            background-image:
+                linear-gradient(to right, rgba(0, 118, 178, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 118, 178, 0.05) 1px, transparent 1px);
+        }
+
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle 4s infinite;
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: 0.2;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+    <!-- Stars background animation -->
+    <div id="stars-container" class="fixed top-0 left-0 w-full h-full z-0 pointer-events-none overflow-hidden"></div>
+
+    <!-- Header -->
+    <header class="sticky top-0 bg-white/90 backdrop-blur-md z-50 shadow-md">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <a href="/" class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center animate-float shadow-lg">
+                        <i class="fas fa-puzzle-piece text-white text-2xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">StarPuzzle Valley</span>
+                </a>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-dark focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="/#features" class="font-medium text-dark hover:text-primary transition-colors">Features</a>
+                    <a href="/#story" class="font-medium text-dark hover:text-primary transition-colors">Story</a>
+                    <a href="/#screenshots" class="font-medium text-dark hover:text-primary transition-colors">Screenshots</a>
+                    <a href="/#testimonials" class="font-medium text-dark hover:text-primary transition-colors">Reviews</a>
+                    <a href="/#download" class="inline-block px-6 py-2.5 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-full shadow-md hover:shadow-lg transition-all">
+                        Download Now
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Mobile Navigation -->
+            <div id="mobile-menu" class="md:hidden hidden bg-white mt-3 rounded-lg shadow-lg animate-pulse-slow">
+                <div class="flex flex-col space-y-3 p-4">
+                    <a href="/#features" class="font-medium text-dark hover:text-primary transition-colors">Features</a>
+                    <a href="/#story" class="font-medium text-dark hover:text-primary transition-colors">Story</a>
+                    <a href="/#screenshots" class="font-medium text-dark hover:text-primary transition-colors">Screenshots</a>
+                    <a href="/#testimonials" class="font-medium text-dark hover:text-primary transition-colors">Reviews</a>
+                    <a href="/#download" class="inline-block px-6 py-2.5 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-full shadow-md hover:shadow-lg transition-all text-center">
+                        Download Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Privacy Policy Header -->
+    <section class="relative py-16 bg-gradient-to-br from-dark to-secondary text-white">
+        <div class="absolute inset-0 opacity-10 grid-pattern"></div>
+        <div class="container mx-auto px-4 relative z-10 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6">Privacy Policy</h1>
+            <p class="text-xl text-white/80 max-w-3xl mx-auto">At StarPuzzle Valley, your privacy is important to us</p>
+        </div>
+    </section>
+
+    <!-- Privacy Policy Content - Part 1 -->
+    <section class="py-12 bg-white">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-primary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Privacy Policy for StarPuzzle Valley</h2>
+                <p class="mb-4 text-dark/80">
+                    At StarPuzzle Valley, accessible from https://bestchoice-win2025.com/, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that are collected and recorded by StarPuzzle Valley and how we use it.
+                </p>
+                <p class="mb-4 text-dark/80">
+                    If you have additional questions or require more information about our Privacy Policy, do not hesitate to contact us.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-secondary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Log Files</h2>
+                <p class="mb-4 text-dark/80">
+                    StarPuzzle Valley follows a standard procedure of using log files. These files log visitors when they visit websites. All hosting companies do this and are a part of hosting services' analytics. The information collected by log files includes internet protocol (IP) addresses, browser type, Internet Service Provider (ISP), date and time stamp, referring/exit pages, and possibly the number of clicks. These are not linked to any personally identifiable information. The purpose of the information is to analyze trends, administer the site, track users' movement on the website, and gather demographic information. Our Privacy Policy was created with the help of the Privacy Policy Generator.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-primary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Cookies and Web Beacons</h2>
+                <p class="mb-4 text-dark/80">
+                    Like any other website, StarPuzzle Valley uses "cookies." These cookies are used to store information including visitors' preferences and the pages on the website that the visitor accessed or visited. The information is used to optimize the users' experience by customizing our web page content based on visitors' browser type and/or other information.
+                </p>
+                <p class="mb-4 text-dark/80">
+                    For more general information on cookies, please read the "Cookies" article from the Privacy Policy Generator.
+                </p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-secondary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Google DoubleClick DART Cookie</h2>
+                <p class="mb-4 text-dark/80">
+                    Google is one of the third-party vendors on our site. It also uses cookies, known as DART cookies, to serve ads to our site visitors based upon their visit to https://bestchoice-win2025.com/ and other sites on the internet. However, visitors may choose to decline the use of DART cookies by visiting the Google ad and content network Privacy Policy at the following URL:
+                </p>
+                <a href="https://policies.google.com/technologies/ads" target="_blank" class="inline-block px-6 py-3 bg-secondary/10 rounded-full text-secondary font-medium mb-4 hover:bg-secondary/20 transition-colors">
+                    <i class="fas fa-external-link-alt mr-2"></i>Google Ads Policy
+                </a>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-primary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Our Advertising Partners</h2>
+                <p class="mb-4 text-dark/80">
+                    Some of the advertisers on our site may use cookies and web beacons. Our advertising partners are listed below. Each of our advertising partners has its own Privacy Policy for their policies on user data. For easier access, we hyperlinked to their Privacy Policies below:
+                </p>
+                <div class="bg-primary/5 p-4 rounded-xl mb-4">
+                    <h3 class="font-bold mb-2">Google</h3>
+                    <a href="https://policies.google.com/technologies/ads" target="_blank" class="text-primary hover:underline">
+                        https://policies.google.com/technologies/ads
+                    </a>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-secondary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Privacy Policies</h2>
+                <p class="mb-4 text-dark/80">
+                    You may consult this list to find the Privacy Policy for each of the advertising partners of StarPuzzle Valley.
+                </p>
+                <p class="mb-4 text-dark/80">
+                    Third-party ad servers or ad networks use technologies like cookies, JavaScript, or Web Beacons that are used in their respective advertisements and links that appear on StarPuzzle Valley, which are sent directly to users' browsers. They automatically receive your IP address when this occurs. These technologies are used to measure the effectiveness of their advertising campaigns and/or to personalize the advertising content that you see on websites that you visit.
+                </p>
+                <p class="mb-4 text-dark/80">
+                    Note that StarPuzzle Valley has no access to or control over these cookies that are used by third-party advertisers.
+                </p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-primary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Third-Party Privacy Policies</h2>
+                <p class="mb-4 text-dark/80">
+                    StarPuzzle Valley's Privacy Policy does not apply to other advertisers or websites. Thus, we advise you to consult the respective Privacy Policies of these third-party ad servers for more detailed information. It may include their practices and instructions about how to opt out of certain options.
+                </p>
+                <p class="mb-4 text-dark/80">
+                    You can choose to disable cookies through your browser settings. More detailed information about cookie management with specific web browsers can be found at the browsers' respective websites.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-secondary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Children's Information</h2>
+                <p class="mb-4 text-dark/80">
+                    Another part of our priority is adding protection for children while using the internet. We encourage parents and guardians to observe, participate in, and/or monitor and guide their online activity.
+                </p>
+                <p class="mb-4 text-dark/80">
+                    StarPuzzle Valley does not knowingly collect any personally identifiable information from children under the age of 13. If you believe that your child provided this kind of information on our website, we strongly encourage you to contact us immediately, and we will do our best to promptly remove such information from our records.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-primary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Online Privacy Policy Only</h2>
+                <p class="mb-4 text-dark/80">
+                    This Privacy Policy applies only to our online activities and is valid for visitors to our website with regards to the information that they share and/or collect in StarPuzzle Valley. This policy does not apply to any information collected offline or via channels other than this website.
+                </p>
+            </div>
+
+            <div class="flex justify-center mt-12 mb-8">
+                <a href="/" class="inline-block px-8 py-4 bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-full shadow-lg hover:shadow-xl transition-all text-lg">
+                    <i class="fas fa-home mr-2"></i> Return to Home
+                </a>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+                <a href="/" class="flex items-center space-x-3 mb-6 md:mb-0">
+                    <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                        <i class="fas fa-puzzle-piece text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold text-white">StarPuzzle Valley</span>
+                </a>
+
+
+            </div>
+
+            <hr class="border-white/10 mb-8">
+
+            <div class="flex flex-col md:flex-row justify-between">
+                <div class="mb-6 md:mb-0">
+                    <p class="text-white/70">© 2025 StarPuzzle Valley. All rights reserved.</p>
+                </div>
+
+                <div class="flex flex-wrap gap-4 md:gap-8">
+                    <a href="/Policy356/" class="text-white/70 hover:text-white transition-colors">Privacy Policy</a>
+                    <a href="/Service347/" class="text-white/70 hover:text-white transition-colors">Terms of Service</a>
+                    <a href="/Cookie992/" class="text-white/70 hover:text-white transition-colors">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Stars background animation
+        function createStars() {
+            const starsContainer = document.getElementById('stars-container');
+            const starCount = 100;
+
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+
+                // Random position
+                const x = Math.floor(Math.random() * 100);
+                const y = Math.floor(Math.random() * 100);
+
+                // Random size
+                const size = Math.random() * 3;
+
+                // Random animation delay
+                const delay = Math.random() * 4;
+
+                star.style.left = `${x}%`;
+                star.style.top = `${y}%`;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.animationDelay = `${delay}s`;
+
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+
+                    // Close mobile menu if open
+                    const mobileMenu = document.getElementById('mobile-menu');
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+
+        // Initialize stars on load
+        window.addEventListener('load', createStars);
+    </script>
+</body>
+
+</html>
+
+
+
+
+<?php
+$cookieConsentHtml = '
+<style>
+.cookie-consent {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 101;
+    background: rgba(0, 14, 32, 0.95); /* Dark color with transparency */
+    backdrop-filter: blur(10px);
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    transform: translateY(100%);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    border-top: 3px solid #089400; /* Primary green color */
+}
+
+.cookie-container {
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.cookie-content {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.cookie-title {
+    font-size: 1.1rem;
+    color: #ffffff;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-right: 1.5rem;
+    margin-bottom: 0;
+    white-space: nowrap;
+}
+
+.cookie-title i {
+    color: #0076b2; /* Secondary blue color */
+    font-size: 1.25rem;
+}
+
+.cookie-text {
+    color: #e6e6e6;
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.5;
+    font-weight: 300; 
+}
+
+.cookie-link {
+    color: #ffffff; /* White text */
+    text-decoration: none;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.cookie-link::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: #089400; /* Primary green color */
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.cookie-link:hover::after {
+    transform: scaleX(1);
+}
+
+.cookie-buttons {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.cookie-button-reject,
+.cookie-button-accept {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 50px; /* Rounded buttons like in the main site */
+}
+
+.cookie-button-reject {
+    background: transparent;
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.cookie-button-reject:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.cookie-button-accept {
+    background: linear-gradient(to right, #089400, #0076b2); /* Gradient like main buttons */
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 10px rgba(8, 148, 0, 0.3);
+}
+
+.cookie-button-accept:hover {
+    background: linear-gradient(to right, #0a7a04, #005f8f);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(8, 148, 0, 0.4);
+}
+
+@media (max-width: 992px) {
+    .cookie-container {
+        flex-direction: column;
+        padding: 1.25rem;
+    }
+
+    .cookie-content {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 1.25rem;
+        width: 100%;
+    }
+
+    .cookie-title {
+        margin-bottom: 0.75rem;
+    }
+
+    .cookie-buttons {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 576px) {
+    .cookie-buttons {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.75rem;
+    }
+    
+    .cookie-button-reject,
+    .cookie-button-accept {
+        width: 100%;
+        text-align: center;
+    }
+}
+</style>
+<div id="cookieConsent" class="cookie-consent">
+    <div class="cookie-container">
+        <div class="cookie-content">
+            <h3 class="cookie-title">
+                <i class="fas fa-cookie-bite"></i>
+                Cookie Policy
+            </h3>
+            <p class="cookie-text">
+                StarPuzzle Valley uses cookies to enhance your gaming experience. By continuing to use our website, you agree to the use of cookies. For more information, you can read our
+                <a href="/Policy356/" class="cookie-link">Privacy Policy</a>,
+                <a href="/Service347/" class="cookie-link">Terms of Service</a>,
+                and
+                <a href="/Cookie992/" class="cookie-link">Cookie Policy</a>.
+            </p>
+        </div>
+        
+        <div class="cookie-buttons">
+            <button id="rejectCookies" class="cookie-button-reject">
+                Reject
+            </button>
+            <button id="acceptCookies" class="cookie-button-accept">
+                Accept
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+   const cookieConsent = document.getElementById("cookieConsent");
+   const acceptBtn = document.getElementById("acceptCookies");
+   const rejectBtn = document.getElementById("rejectCookies");
+   
+   if (!getCookie("aprenderd_cookie_consent")) {
+       setTimeout(() => {
+           cookieConsent.style.transform = "translateX(0)";
+       }, 1000);
+   }
+
+   function getCookie(name) {
+       let matches = document.cookie.match(new RegExp(
+           "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, "\\$1") + "=([^;]*)"
+       ));
+       return matches ? decodeURIComponent(matches[1]) : undefined;
+   }
+   
+   function setCookie(name, value, days) {
+       const date = new Date();
+       date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+       const expires = "; expires=" + date.toUTCString();
+       document.cookie = name + "=" + value + expires + "; path=/; SameSite=Strict; Secure";
+   }
+
+   function handleConsent(consent) {
+       setCookie("aprenderd_cookie_consent", consent, 365);
+       cookieConsent.style.transform = "translateX(120%)";
+       
+       setTimeout(() => {
+           cookieConsent.remove();
+       }, 500);
+   }
+
+   acceptBtn.addEventListener("click", () => handleConsent("accepted"));
+   rejectBtn.addEventListener("click", () => handleConsent("rejected"));
+});
+</script>
+';
+
+if (!isset($_COOKIE["aprenderd_cookie_consent"])) {
+    echo $cookieConsentHtml;
+}
+?>

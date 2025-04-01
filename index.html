@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StarPuzzle Valley - Nonogram Adventure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel='icon' href='/src/icons/logo.png' type='image/x-icon'>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#089400',
+                        secondary: '#0076b2',
+                        tertiary: '#155800',
+                        dark: '#000e20',
+                        light: '#ffffff'
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': {
+                                transform: 'translateY(0)'
+                            },
+                            '50%': {
+                                transform: 'translateY(-10px)'
+                            },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        .bg-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23089400' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        .bg-hero-pattern {
+            background-image: url('/src/img/herobg.png');
+            /* Replace with your actual image path */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .grid-pattern {
+            background-size: 20px 20px;
+            background-image:
+                linear-gradient(to right, rgba(0, 118, 178, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 118, 178, 0.05) 1px, transparent 1px);
+        }
+
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle 4s infinite;
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: 0.2;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+
+
+
+        @keyframes ticker {
+            0% {
+                transform: translateX(100%);
+            }
+
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        .ticker-wrap {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ticker {
+            display: inline-flex;
+            white-space: nowrap;
+            animation: ticker 30s linear infinite;
+        }
+
+        .ticker-item {
+            margin: 0 2rem;
+            color: white;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            background: linear-gradient(90deg, var(--tw-gradient-stops));
+            --tw-gradient-from: rgba(8, 148, 0, 0.7);
+            --tw-gradient-to: rgba(0, 118, 178, 0.7);
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: transform 0.3s ease;
+        }
+
+        .ticker-item:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+    <!-- Stars background animation -->
+    <div id="stars-container" class="fixed top-0 left-0 w-full h-full z-0 pointer-events-none overflow-hidden"></div>
+
+    <!-- Header -->
+    <header class="sticky top-0 bg-white/90 backdrop-blur-md z-50 shadow-md">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <a href="/" class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center animate-float shadow-lg">
+                        <i class="fas fa-puzzle-piece text-white text-2xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">StarPuzzle Valley</span>
+                </a>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-dark focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="font-medium text-dark hover:text-primary transition-colors">Features</a>
+                    <a href="#story" class="font-medium text-dark hover:text-primary transition-colors">Story</a>
+                    <a href="#screenshots" class="font-medium text-dark hover:text-primary transition-colors">Screenshots</a>
+                    <a href="#testimonials" class="font-medium text-dark hover:text-primary transition-colors">Reviews</a>
+                    <a href="#download" class="inline-block px-6 py-2.5 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-full shadow-md hover:shadow-lg transition-all">
+                        Download Now
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Mobile Navigation -->
+            <div id="mobile-menu" class="md:hidden hidden bg-white mt-3 rounded-lg shadow-lg animate-pulse-slow">
+                <div class="flex flex-col space-y-3 p-4">
+                    <a href="#features" class="font-medium text-dark hover:text-primary transition-colors">Features</a>
+                    <a href="#story" class="font-medium text-dark hover:text-primary transition-colors">Story</a>
+                    <a href="#screenshots" class="font-medium text-dark hover:text-primary transition-colors">Screenshots</a>
+                    <a href="#testimonials" class="font-medium text-dark hover:text-primary transition-colors">Reviews</a>
+                    <a href="#download" class="inline-block px-6 py-2.5 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-full shadow-md hover:shadow-lg transition-all text-center">
+                        Download Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative overflow-hidden py-20 text-white bg-hero-pattern">
+        <div class="absolute inset-0 bg-gradient-to-br from-dark/90 to-secondary/90"></div>
+        <div class="absolute inset-0 opacity-10 grid-pattern"></div>
+        <div class="container mx-auto px-4 py-16 relative z-10">
+            <div class="flex flex-col items-center text-center">
+                <div class="max-w-3xl mx-auto">
+                    <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight animate-float">Discover the Magic of <span class="bg-clip-text text-transparent bg-gradient-to-r from-white to-white/80">Valley of Stars</span></h1>
+                    <p class="text-xl md:text-2xl mb-8 text-white/90">Embark on a mysterious journey with nonogram puzzles. Can the girl and Mr. Fox safely reach the Valley of Stars?</p>
+
+                    <!-- Game Genres -->
+                    <div class="flex flex-wrap justify-center gap-3 mb-8">
+                        <span class="bg-primary px-4 py-2 rounded-full text-white font-bold shadow-lg transform hover:scale-105 transition-transform">Puzzle</span>
+                        <span class="bg-secondary px-4 py-2 rounded-full text-white font-bold shadow-lg transform hover:scale-105 transition-transform">Logic</span>
+                        <span class="bg-tertiary px-4 py-2 rounded-full text-white font-bold shadow-lg transform hover:scale-105 transition-transform">Casual</span>
+                        <span class="bg-dark/80 px-4 py-2 rounded-full text-white font-bold shadow-lg transform hover:scale-105 transition-transform">Single Player</span>
+                        <span class="bg-primary/80 px-4 py-2 rounded-full text-white font-bold shadow-lg transform hover:scale-105 transition-transform">Stylized</span>
+                        <span class="bg-secondary/80 px-4 py-2 rounded-full text-white font-bold shadow-lg transform hover:scale-105 transition-transform">Offline</span>
+                    </div>
+
+                    <div class="flex flex-wrap justify-center gap-4 mb-8">
+                        <a href="#download" class="inline-block px-8 py-4 bg-white text-dark font-bold rounded-full shadow-lg hover:shadow-xl transition-all text-lg">
+                            <i class="fas fa-download mr-2"></i> Download Now
+                        </a>
+                        <a href="#features" class="inline-block px-8 py-4 bg-white/20 backdrop-blur-sm text-white font-bold rounded-full hover:bg-white/30 transition-all text-lg">
+                            <i class="fas fa-star mr-2"></i> See Features
+                        </a>
+                    </div>
+
+                    <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 inline-flex items-center">
+                        <div class="flex text-yellow-300 text-xl">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <span class="ml-3 text-white/90">4.7 stars from 6,230+ reviews</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Running Text Ticker -->
+            <div class="mt-16 overflow-hidden relative">
+                <div class="ticker-wrap bg-white/10 backdrop-blur-sm rounded-xl py-4">
+                    <div class="ticker">
+                        <span class="ticker-item text-2xl font-bold">Puzzles</span>
+                        <span class="ticker-item text-2xl font-bold">Nonograms</span>
+                        <span class="ticker-item text-2xl font-bold">Brain Teasers</span>
+                        <span class="ticker-item text-2xl font-bold">Logic Games</span>
+                        <span class="ticker-item text-2xl font-bold">Mind Challenges</span>
+                        <span class="ticker-item text-2xl font-bold">Picture Cross</span>
+                        <span class="ticker-item text-2xl font-bold">Picross</span>
+                        <span class="ticker-item text-2xl font-bold">Paint by Numbers</span>
+                        <span class="ticker-item text-2xl font-bold">Grid Logic</span>
+                        <span class="ticker-item text-2xl font-bold">Puzzles</span>
+                        <span class="ticker-item text-2xl font-bold">Nonograms</span>
+                        <span class="ticker-item text-2xl font-bold">Brain Teasers</span>
+                        <span class="ticker-item text-2xl font-bold">Logic Games</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-white relative overflow-hidden">
+        <div class="absolute inset-0 bg-pattern opacity-50"></div>
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4 text-dark">Amazing Features</h2>
+                <p class="text-xl text-dark/70 max-w-3xl mx-auto">Discover what makes Valley of Stars a top-rated nonogram puzzle game with a captivating story</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="bg-white border-2 border-primary/20 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-puzzle-piece text-primary text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3 text-dark">Hundreds of Puzzles</h3>
+                    <p class="text-dark/70">Enjoy countless hours of gameplay with hundreds of available nonogram puzzles at various difficulty levels.</p>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="bg-white border-2 border-secondary/20 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+                    <div class="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-paint-brush text-secondary text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3 text-dark">Colorful Design</h3>
+                    <p class="text-dark/70">Enjoy beautiful colorful dot designs with fixed puzzle logic for the most enjoyable gaming experience.</p>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="bg-white border-2 border-tertiary/20 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+                    <div class="w-16 h-16 bg-tertiary/10 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-save text-tertiary text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3 text-dark">Auto-Save</h3>
+                    <p class="text-dark/70">Never lose your progress with automatic saving at the end of each play session.</p>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="bg-white border-2 border-primary/20 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-book text-primary text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3 text-dark">Compelling Story</h3>
+                    <p class="text-dark/70">Follow the journey of a girl and Mr. Fox to the Valley of Stars with a mysterious and engaging storyline.</p>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="bg-white border-2 border-secondary/20 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+                    <div class="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-layer-group text-secondary text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3 text-dark">Multiple Difficulty Levels</h3>
+                    <p class="text-dark/70">Challenge yourself with various difficulty settings suitable for both beginners and puzzle experts.</p>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="bg-white border-2 border-tertiary/20 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+                    <div class="w-16 h-16 bg-tertiary/10 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-map text-tertiary text-2xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-3 text-dark">Big Map Mode</h3>
+                    <p class="text-dark/70">Unlock the special Big Map mode after completing the Story and Normal modes for even more puzzles.</p>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="mt-20 grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-gradient-to-br from-primary to-tertiary rounded-2xl p-8 text-center text-white shadow-lg">
+                    <div class="text-5xl font-bold mb-2">100K+</div>
+                    <div class="text-xl">Downloads</div>
+                </div>
+                <div class="bg-gradient-to-br from-secondary to-dark rounded-2xl p-8 text-center text-white shadow-lg">
+                    <div class="text-5xl font-bold mb-2">4.7</div>
+                    <div class="text-xl">Star Rating</div>
+                </div>
+                <div class="bg-gradient-to-br from-tertiary to-primary rounded-2xl p-8 text-center text-white shadow-lg">
+                    <div class="text-5xl font-bold mb-2">6,230+</div>
+                    <div class="text-xl">Reviews</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Story Section -->
+    <section id="story" class="py-20 bg-gradient-to-br from-dark to-secondary text-white relative overflow-hidden">
+        <div class="absolute inset-0 grid-pattern opacity-10"></div>
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">Mysterious Journey</h2>
+                <p class="text-xl text-white/80 max-w-3xl mx-auto">Follow the captivating adventure of our heroes as they travel to the Valley of Stars</p>
+            </div>
+
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-10 md:mb-0">
+                    <div class="relative">
+                        <div class="absolute -inset-4 bg-primary/30 rounded-full blur-xl"></div>
+                        <div class="bg-white/10 backdrop-blur-sm p-6 rounded-3xl shadow-xl">
+                            <div class="relative">
+                                <img src="/src/img/story.png" alt="Story Scene" class="rounded-2xl w-full">
+                                <div class="absolute bottom-4 right-4 bg-dark/70 backdrop-blur-sm px-4 py-2 rounded-full">
+                                    <i class="fas fa-star text-yellow-300 mr-2"></i>
+                                    <span>Valley of Stars</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:w-1/2 md:pl-12">
+                    <h3 class="text-3xl font-bold mb-6 animate-float">A Tale of Discovery</h3>
+                    <div class="space-y-6 text-lg">
+                        <p class="bg-white/10 backdrop-blur-sm p-4 rounded-xl">Will the girl and Mr. Fox safely reach the Valley of Stars? What awaits them at the end of their journey?</p>
+                        <p class="bg-white/10 backdrop-blur-sm p-4 rounded-xl">Witness their wonderful journey to the end while enjoying nonogram puzzles along the way.</p>
+                        <p class="bg-white/10 backdrop-blur-sm p-4 rounded-xl">The more puzzles you solve, the more interesting the story becomes!</p>
+                    </div>
+                    <div class="mt-8">
+                        <a href="#download" class="inline-block px-8 py-4 bg-white text-dark font-bold rounded-full shadow-lg hover:shadow-xl transition-all text-lg">
+                            <i class="fas fa-book-open mr-2"></i> Start Your Journey
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Story Progress -->
+            <div class="mt-20">
+                <div class="flex justify-between items-center relative">
+                    <div class="absolute left-0 right-0 top-1/2 h-2 bg-white/20 -translate-y-1/2 rounded-full"></div>
+
+                    <!-- Step 1 -->
+                    <div class="relative z-10 text-center">
+                        <div class="w-16 h-16 rounded-full bg-primary flex items-center justify-center mx-auto mb-3 shadow-lg">
+                            <i class="fas fa-map-marker-alt text-white text-xl"></i>
+                        </div>
+                        <h4 class="font-bold">Beginning</h4>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="relative z-10 text-center">
+                        <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3 shadow-lg">
+                            <i class="fas fa-puzzle-piece text-white text-xl"></i>
+                        </div>
+                        <h4 class="font-bold">Puzzles</h4>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="relative z-10 text-center">
+                        <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3 shadow-lg">
+                            <i class="fas fa-hiking text-white text-xl"></i>
+                        </div>
+                        <h4 class="font-bold">Adventure</h4>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="relative z-10 text-center">
+                        <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3 shadow-lg">
+                            <i class="fas fa-mountain text-white text-xl"></i>
+                        </div>
+                        <h4 class="font-bold">Valley</h4>
+                    </div>
+
+                    <!-- Step 5 -->
+                    <div class="relative z-10 text-center">
+                        <div class="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3 shadow-lg">
+                            <i class="fas fa-star text-white text-xl"></i>
+                        </div>
+                        <h4 class="font-bold">Discovery</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshots Section -->
+    <section id="screenshots" class="py-20 bg-white relative overflow-hidden">
+        <div class="absolute inset-0 bg-pattern opacity-50"></div>
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4 text-dark">Game Screenshots</h2>
+                <p class="text-xl text-dark/70 max-w-3xl mx-auto">See the beautiful gameplay and captivating visuals of Valley of Stars</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Screenshot 1 -->
+                <div class="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:shadow-xl">
+                    <img src="/src/img/screen1.png" alt="Game Screenshot 1" class="w-full h-auto rounded-2xl transform transition-transform group-hover:scale-105">
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                        <div class="text-white">
+                            <h3 class="text-xl font-bold">Nonogram Puzzle</h3>
+                            <p>Solve colorful puzzles with logic</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Screenshot 2 -->
+                <div class="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:shadow-xl">
+                    <img src="/src/img/screen2.png" alt="Game Screenshot 2" class="w-full h-auto rounded-2xl transform transition-transform group-hover:scale-105">
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                        <div class="text-white">
+                            <h3 class="text-xl font-bold">Story Mode</h3>
+                            <p>Follow the adventures of the girl and Mr. Fox</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Screenshot 3 -->
+                <div class="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:shadow-xl">
+                    <img src="/src/img/screen3.png" alt="Game Screenshot 3" class="w-full h-auto rounded-2xl transform transition-transform group-hover:scale-105">
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                        <div class="text-white">
+                            <h3 class="text-xl font-bold">Big Map Mode</h3>
+                            <p>Unlock additional challenges</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Screenshot 4 -->
+                <div class="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:shadow-xl">
+                    <img src="/src/img/screen4.png" alt="Game Screenshot 4" class="w-full h-auto rounded-2xl transform transition-transform group-hover:scale-105">
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                        <div class="text-white">
+                            <h3 class="text-xl font-bold">Completed Puzzle</h3>
+                            <p>See your creations come to life</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Screenshot 5 -->
+                <div class="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:shadow-xl">
+                    <img src="/src/img/screen5.png" alt="Game Screenshot 5" class="w-full h-auto rounded-2xl transform transition-transform group-hover:scale-105">
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                        <div class="text-white">
+                            <h3 class="text-xl font-bold">Story Scene</h3>
+                            <p>Immersive storytelling elements</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Screenshot 6 -->
+                <div class="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:shadow-xl">
+                    <img src="/src/img/screen6.png" alt="Game Screenshot 6" class="w-full h-auto rounded-2xl transform transition-transform group-hover:scale-105">
+                    <div class="absolute inset-0 bg-gradient-to-t from-dark/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                        <div class="text-white">
+                            <h3 class="text-xl font-bold">Difficulty Options</h3>
+                            <p>Choose your challenge level</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="py-20 bg-gradient-to-br from-primary to-tertiary text-white relative overflow-hidden">
+        <div class="absolute inset-0 grid-pattern opacity-10"></div>
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">What Players Say</h2>
+                <p class="text-xl text-white/80 max-w-3xl mx-auto">Join thousands of satisfied players who love Valley of Stars</p>
+                <div class="flex justify-center mt-4">
+                    <div class="flex text-yellow-300 text-3xl">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                </div>
+                <p class="mt-2 text-xl font-bold">4.7 out of 5 stars from 6,230+ reviews</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Testimonial 1 -->
+                <div class="bg-white/10 backdrop-blur-sm p-6 rounded-2xl shadow-xl">
+                    <div class="flex text-yellow-300 mb-4">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="mb-6">"Absolutely love this game! The puzzles are challenging but not frustrating, and the story is so charming. I've been playing for hours!"</p>
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold">Sarah M.</h4>
+                            <p class="text-sm text-white/70">Puzzle Enthusiast</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 2 -->
+                <div class="bg-white/10 backdrop-blur-sm p-6 rounded-2xl shadow-xl">
+                    <div class="flex text-yellow-300 mb-4">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="mb-6">"Perfect game for relaxing after work. The auto-save feature is great, and I love how the story unfolds as you solve more puzzles. Highly recommend!"</p>
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold">James K.</h4>
+                            <p class="text-sm text-white/70">Casual Gamer</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 3 -->
+                <div class="bg-white/10 backdrop-blur-sm p-6 rounded-2xl shadow-xl">
+                    <div class="flex text-yellow-300 mb-4">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                    <p class="mb-6">"I've been playing nonogram games for years, and Valley of Stars is one of the best. The colorful designs and engaging story make it stand out from the rest."</p>
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold">Emily R.</h4>
+                            <p class="text-sm text-white/70">Puzzle Master</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 4 -->
+                <div class="bg-white/10 backdrop-blur-sm p-6 rounded-2xl shadow-xl">
+                    <div class="flex text-yellow-300 mb-4">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="far fa-star"></i>
+                    </div>
+                    <p class="mb-6">"Great for all ages! My 8-year-old loves solving the puzzles, and it's helping develop logical thinking skills. The story is charming too!"</p>
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold">Michael T.</h4>
+                            <p class="text-sm text-white/70">Parent</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 5 -->
+                <div class="bg-white/10 backdrop-blur-sm p-6 rounded-2xl shadow-xl">
+                    <div class="flex text-yellow-300 mb-4">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="mb-6">"The Big Map mode is amazing once you unlock it! So many additional puzzles to solve. This game has kept me entertained for months."</p>
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold">Alex P.</h4>
+                            <p class="text-sm text-white/70">Dedicated Player</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonial 6 -->
+                <div class="bg-white/10 backdrop-blur-sm p-6 rounded-2xl shadow-xl">
+                    <div class="flex text-yellow-300 mb-4">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="mb-6">"I love the different difficulty levels. Started with easy puzzles and worked my way up. The story gets more interesting as you solve more puzzles!"</p>
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mr-4">
+                            <i class="fas fa-user text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold">Olivia J.</h4>
+                            <p class="text-sm text-white/70">Strategic Thinker</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section id="download" class="py-20 bg-white relative overflow-hidden">
+        <div class="absolute inset-0 bg-pattern opacity-50"></div>
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="max-w-4xl mx-auto bg-gradient-to-br from-secondary to-dark rounded-3xl overflow-hidden shadow-2xl">
+                <div class="p-8 md:p-12 text-white text-center">
+                    <h2 class="text-4xl md:text-5xl font-bold mb-6">Ready to Start Your Adventure?</h2>
+                    <p class="text-xl mb-8 text-white/90">Download Valley of Stars now and join over 100,000 players on a magical journey of puzzles and discovery!</p>
+
+                    <div class="flex flex-col md:flex-row justify-center gap-6">
+                        <a href="https://play.google.com/store/apps/details?id=com.cozyground.valleyofstars&pcampaignid=web_share" target="_blank" class="inline-flex items-center justify-center bg-white text-dark px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all">
+                            <i class="fab fa-google-play text-2xl mr-3"></i>
+                            <div class="text-left">
+                                <div class="text-xs">GET IT ON</div>
+                                <div class="text-lg font-bold">Google Play</div>
+                            </div>
+                        </a>
+                        <a href="https://apps.apple.com/us/app/valley-of-stars-nonogram/id6443896143?l" target="_blank" class="inline-flex items-center justify-center bg-white text-dark px-8 py-4 rounded-full shadow-lg hover:shadow-xl transition-all">
+                            <i class="fab fa-apple text-2xl mr-3"></i>
+                            <div class="text-left">
+                                <div class="text-xs">DOWNLOAD ON THE</div>
+                                <div class="text-lg font-bold">App Store</div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <div class="mt-12 flex justify-center">
+                        <div class="bg-white/10 backdrop-blur-sm rounded-xl p-4 inline-flex items-center">
+                            <div class="flex text-yellow-300 text-xl">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <span class="ml-3 text-white/90">4.7 stars · 6,230+ reviews · 100,000+ downloads</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <div class="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-dark to-transparent"></div>
+                    <img src="/src/img/herobg.png" alt="Valley of Stars Game Banner" class="w-full">
+                </div>
+            </div>
+
+            <div class="mt-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Quick Fact 1 -->
+                <div class="bg-white border-2 border-primary/20 rounded-2xl p-6 shadow-lg text-center">
+                    <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-child text-primary text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-dark">Age Rating</h3>
+                    <p class="text-dark/70">Suitable for ages 7+</p>
+                </div>
+
+                <!-- Quick Fact 2 -->
+                <div class="bg-white border-2 border-secondary/20 rounded-2xl p-6 shadow-lg text-center">
+                    <div class="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-puzzle-piece text-secondary text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-dark">Puzzle Count</h3>
+                    <p class="text-dark/70">Hundreds of unique puzzles</p>
+                </div>
+
+                <!-- Quick Fact 3 -->
+                <div class="bg-white border-2 border-tertiary/20 rounded-2xl p-6 shadow-lg text-center">
+                    <div class="w-16 h-16 bg-tertiary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-mobile-alt text-tertiary text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-dark">Platforms</h3>
+                    <p class="text-dark/70">iOS and Android devices</p>
+                </div>
+
+                <!-- Quick Fact 4 -->
+                <div class="bg-white border-2 border-dark/20 rounded-2xl p-6 shadow-lg text-center">
+                    <div class="w-16 h-16 bg-dark/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-language text-dark text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-dark">Languages</h3>
+                    <p class="text-dark/70">Available in multiple languages</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+                <a href="/" class="flex items-center space-x-3 mb-6 md:mb-0">
+                    <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                        <i class="fas fa-puzzle-piece text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold text-white">StarPuzzle Valley</span>
+                </a>
+
+
+            </div>
+
+            <hr class="border-white/10 mb-8">
+
+            <div class="flex flex-col md:flex-row justify-between">
+                <div class="mb-6 md:mb-0">
+                    <p class="text-white/70">© 2025 StarPuzzle Valley. All rights reserved.</p>
+                </div>
+
+                <div class="flex flex-wrap gap-4 md:gap-8">
+                    <a href="/Policy356/" class="text-white/70 hover:text-white transition-colors">Privacy Policy</a>
+                    <a href="/Service347/" class="text-white/70 hover:text-white transition-colors">Terms of Service</a>
+                    <a href="/Cookie992/" class="text-white/70 hover:text-white transition-colors">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Stars background animation
+        function createStars() {
+            const starsContainer = document.getElementById('stars-container');
+            const starCount = 100;
+
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+
+                // Random position
+                const x = Math.floor(Math.random() * 100);
+                const y = Math.floor(Math.random() * 100);
+
+                // Random size
+                const size = Math.random() * 3;
+
+                // Random animation delay
+                const delay = Math.random() * 4;
+
+                star.style.left = `${x}%`;
+                star.style.top = `${y}%`;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.animationDelay = `${delay}s`;
+
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+
+                    // Close mobile menu if open
+                    const mobileMenu = document.getElementById('mobile-menu');
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+
+        // Initialize stars on load
+        window.addEventListener('load', createStars);
+    </script>
+</body>
+
+</html>
+
+
+
+
+<?php
+$cookieConsentHtml = '
+<style>
+.cookie-consent {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 101;
+    background: rgba(0, 14, 32, 0.95); /* Dark color with transparency */
+    backdrop-filter: blur(10px);
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    transform: translateY(100%);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    border-top: 3px solid #089400; /* Primary green color */
+}
+
+.cookie-container {
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.cookie-content {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.cookie-title {
+    font-size: 1.1rem;
+    color: #ffffff;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-right: 1.5rem;
+    margin-bottom: 0;
+    white-space: nowrap;
+}
+
+.cookie-title i {
+    color: #0076b2; /* Secondary blue color */
+    font-size: 1.25rem;
+}
+
+.cookie-text {
+    color: #e6e6e6;
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.5;
+    font-weight: 300; 
+}
+
+.cookie-link {
+    color: #ffffff; /* White text */
+    text-decoration: none;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.cookie-link::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: #089400; /* Primary green color */
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.cookie-link:hover::after {
+    transform: scaleX(1);
+}
+
+.cookie-buttons {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.cookie-button-reject,
+.cookie-button-accept {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 50px; /* Rounded buttons like in the main site */
+}
+
+.cookie-button-reject {
+    background: transparent;
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.cookie-button-reject:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.cookie-button-accept {
+    background: linear-gradient(to right, #089400, #0076b2); /* Gradient like main buttons */
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 10px rgba(8, 148, 0, 0.3);
+}
+
+.cookie-button-accept:hover {
+    background: linear-gradient(to right, #0a7a04, #005f8f);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(8, 148, 0, 0.4);
+}
+
+@media (max-width: 992px) {
+    .cookie-container {
+        flex-direction: column;
+        padding: 1.25rem;
+    }
+
+    .cookie-content {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 1.25rem;
+        width: 100%;
+    }
+
+    .cookie-title {
+        margin-bottom: 0.75rem;
+    }
+
+    .cookie-buttons {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 576px) {
+    .cookie-buttons {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.75rem;
+    }
+    
+    .cookie-button-reject,
+    .cookie-button-accept {
+        width: 100%;
+        text-align: center;
+    }
+}
+</style>
+<div id="cookieConsent" class="cookie-consent">
+    <div class="cookie-container">
+        <div class="cookie-content">
+            <h3 class="cookie-title">
+                <i class="fas fa-cookie-bite"></i>
+                Cookie Policy
+            </h3>
+            <p class="cookie-text">
+                StarPuzzle Valley uses cookies to enhance your gaming experience. By continuing to use our website, you agree to the use of cookies. For more information, you can read our
+                <a href="/Policy356/" class="cookie-link">Privacy Policy</a>,
+                <a href="/Service347/" class="cookie-link">Terms of Service</a>,
+                and
+                <a href="/Cookie992/" class="cookie-link">Cookie Policy</a>.
+            </p>
+        </div>
+        
+        <div class="cookie-buttons">
+            <button id="rejectCookies" class="cookie-button-reject">
+                Reject
+            </button>
+            <button id="acceptCookies" class="cookie-button-accept">
+                Accept
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+   const cookieConsent = document.getElementById("cookieConsent");
+   const acceptBtn = document.getElementById("acceptCookies");
+   const rejectBtn = document.getElementById("rejectCookies");
+   
+   if (!getCookie("aprenderd_cookie_consent")) {
+       setTimeout(() => {
+           cookieConsent.style.transform = "translateX(0)";
+       }, 1000);
+   }
+
+   function getCookie(name) {
+       let matches = document.cookie.match(new RegExp(
+           "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, "\\$1") + "=([^;]*)"
+       ));
+       return matches ? decodeURIComponent(matches[1]) : undefined;
+   }
+   
+   function setCookie(name, value, days) {
+       const date = new Date();
+       date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+       const expires = "; expires=" + date.toUTCString();
+       document.cookie = name + "=" + value + expires + "; path=/; SameSite=Strict; Secure";
+   }
+
+   function handleConsent(consent) {
+       setCookie("aprenderd_cookie_consent", consent, 365);
+       cookieConsent.style.transform = "translateX(120%)";
+       
+       setTimeout(() => {
+           cookieConsent.remove();
+       }, 500);
+   }
+
+   acceptBtn.addEventListener("click", () => handleConsent("accepted"));
+   rejectBtn.addEventListener("click", () => handleConsent("rejected"));
+});
+</script>
+';
+
+if (!isset($_COOKIE["aprenderd_cookie_consent"])) {
+    echo $cookieConsentHtml;
+}
+?>

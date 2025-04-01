@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StarPuzzle Valley - Nonogram Adventure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel='icon' href='/src/icons/logo.png' type='image/x-icon'>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#089400',
+                        secondary: '#0076b2',
+                        tertiary: '#155800',
+                        dark: '#000e20',
+                        light: '#ffffff'
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': {
+                                transform: 'translateY(0)'
+                            },
+                            '50%': {
+                                transform: 'translateY(-10px)'
+                            },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        .bg-pattern {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23089400' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+
+        .grid-pattern {
+            background-size: 20px 20px;
+            background-image:
+                linear-gradient(to right, rgba(0, 118, 178, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 118, 178, 0.05) 1px, transparent 1px);
+        }
+
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle 4s infinite;
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: 0.2;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+    <!-- Stars background animation -->
+    <div id="stars-container" class="fixed top-0 left-0 w-full h-full z-0 pointer-events-none overflow-hidden"></div>
+
+    <!-- Header -->
+    <header class="sticky top-0 bg-white/90 backdrop-blur-md z-50 shadow-md">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <a href="/" class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center animate-float shadow-lg">
+                        <i class="fas fa-puzzle-piece text-white text-2xl"></i>
+                    </div>
+                    <span class="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">StarPuzzle Valley</span>
+                </a>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-dark focus:outline-none">
+                        <i class="fas fa-bars text-2xl"></i>
+                    </button>
+                </div>
+
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="/#features" class="font-medium text-dark hover:text-primary transition-colors">Features</a>
+                    <a href="/#story" class="font-medium text-dark hover:text-primary transition-colors">Story</a>
+                    <a href="/#screenshots" class="font-medium text-dark hover:text-primary transition-colors">Screenshots</a>
+                    <a href="/#testimonials" class="font-medium text-dark hover:text-primary transition-colors">Reviews</a>
+                    <a href="/#download" class="inline-block px-6 py-2.5 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-full shadow-md hover:shadow-lg transition-all">
+                        Download Now
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Mobile Navigation -->
+            <div id="mobile-menu" class="md:hidden hidden bg-white mt-3 rounded-lg shadow-lg animate-pulse-slow">
+                <div class="flex flex-col space-y-3 p-4">
+                    <a href="/#features" class="font-medium text-dark hover:text-primary transition-colors">Features</a>
+                    <a href="/#story" class="font-medium text-dark hover:text-primary transition-colors">Story</a>
+                    <a href="/#screenshots" class="font-medium text-dark hover:text-primary transition-colors">Screenshots</a>
+                    <a href="/#testimonials" class="font-medium text-dark hover:text-primary transition-colors">Reviews</a>
+                    <a href="/#download" class="inline-block px-6 py-2.5 bg-gradient-to-r from-primary to-secondary text-white font-medium rounded-full shadow-md hover:shadow-lg transition-all text-center">
+                        Download Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- Terms and Conditions Header -->
+    <section class="relative py-16 bg-gradient-to-br from-dark to-secondary text-white">
+        <div class="absolute inset-0 opacity-10 grid-pattern"></div>
+        <div class="container mx-auto px-4 relative z-10 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-6">Terms and Conditions</h1>
+            <p class="text-xl text-white/80 max-w-3xl mx-auto">Please read these terms carefully before using StarPuzzle Valley</p>
+        </div>
+    </section>
+
+    <!-- Terms and Conditions Content - Part 1 -->
+    <section class="py-12 bg-white">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-primary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Welcome to StarPuzzle Valley!</h2>
+                <p class="mb-4 text-dark/80">
+                    These terms and conditions outline the rules and regulations for the use of StarPuzzle Valley's website, located at https://bestchoice-win2025.com/.
+                </p>
+                <p class="mb-4 text-dark/80">
+                    By accessing this website, we assume you accept these terms and conditions. Do not continue to use StarPuzzle Valley if you do not agree to take all of the terms and conditions stated on this page.
+                </p>
+                <p class="mb-4 text-dark/80">
+                    The following terminology applies to these Terms and Conditions, Privacy Statement, Disclaimer Notice, and all Agreements: "Client," "You," and "Your" refer to you, the person logging on this website and complying with the Company's terms and conditions. "The Company," "Ourselves," "We," "Our," and "Us" refer to our Company. "Party," "Parties," or "Us" refer to both the Client and ourselves. All terms refer to the offer, acceptance, and consideration of payment necessary to undertake the process of our assistance to the Client in the most appropriate manner for the express purpose of meeting the Client's needs in respect of the provision of the Company's stated services, in accordance with and subject to the prevailing law of the Netherlands. Any use of the above terminology or other words in the singular, plural, capitalization, and/or he/she or they are taken as interchangeable and therefore as referring to the same.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-secondary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Cookies</h2>
+                <p class="mb-4 text-dark/80">
+                    We employ the use of cookies. By accessing StarPuzzle Valley, you agree to use cookies in agreement with the StarPuzzle Valley Privacy Policy.
+                </p>
+                <p class="mb-4 text-dark/80">
+                    Most interactive websites use cookies to let us retrieve the user's details for each visit. Cookies are used by our website to enable the functionality of certain areas, making it easier for visitors. Some of our affiliate/advertising partners may also use cookies.
+                </p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-primary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">License</h2>
+                <p class="mb-4 text-dark/80">
+                    Unless otherwise stated, StarPuzzle Valley and/or its licensors own the intellectual property rights for all material on StarPuzzle Valley. All intellectual property rights are reserved. You may access this from StarPuzzle Valley for your personal use, subject to restrictions set in these terms and conditions.
+                </p>
+                <p class="mb-4 text-dark/80">
+                    You must not:
+                </p>
+                <ul class="list-disc pl-8 mb-4 text-dark/80 space-y-2">
+                    <li>Republish material from StarPuzzle Valley</li>
+                    <li>Sell, rent, or sub-license material from StarPuzzle Valley</li>
+                    <li>Reproduce, duplicate, or copy material from StarPuzzle Valley</li>
+                    <li>Redistribute content from StarPuzzle Valley</li>
+                </ul>
+                <p class="mb-4 text-dark/80">
+                    This Agreement shall begin on the date hereof.
+                </p>
+                <p class="mb-4 text-dark/80">
+                    Parts of this website offer users an opportunity to post and exchange opinions and information in certain areas. StarPuzzle Valley does not filter, edit, publish, or review Comments before their presence on the website. Comments reflect the views and opinions of the person posting them. To the extent permitted by applicable laws, StarPuzzle Valley shall not be liable for the Comments or for any liability, damages, or expenses caused and/or suffered as a result of any use of and/or posting of and/or appearance of the Comments on this website.
+                </p>
+                <p class="mb-4 text-dark/80">
+                    StarPuzzle Valley reserves the right to monitor all Comments and to remove any Comments that can be considered inappropriate, offensive, or that breach these Terms and Conditions.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-secondary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Comments</h2>
+                <p class="mb-4 text-dark/80">
+                    You warrant and represent that:
+                </p>
+                <ul class="list-disc pl-8 mb-4 text-dark/80 space-y-2">
+                    <li>You are entitled to post Comments on our website and have all necessary licenses and consents to do so;</li>
+                    <li>The Comments do not invade any intellectual property rights, including without limitation copyright, patent, or trademark of any third party;</li>
+                    <li>The Comments do not contain any defamatory, libelous, offensive, indecent, or otherwise unlawful material that invades privacy;</li>
+                    <li>The Comments will not be used to solicit or promote business, present commercial activities, or engage in unlawful activities.</li>
+                </ul>
+                <p class="mb-4 text-dark/80">
+                    You hereby grant StarPuzzle Valley a non-exclusive license to use, reproduce, edit, and authorize others to use, reproduce, and edit any of your Comments in any and all forms, formats, or media.
+                </p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-primary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Hyperlinking to our Content</h2>
+                <p class="mb-4 text-dark/80">
+                    The following organizations may link to our Website without prior written approval:
+                </p>
+                <ul class="list-disc pl-8 mb-4 text-dark/80 space-y-2">
+                    <li>Government agencies</li>
+                    <li>Search engines</li>
+                    <li>News organizations</li>
+                    <li>Online directory distributors may link to our Website in the same manner as they hyperlink to other businesses' Websites</li>
+                    <li>System-wide Accredited Businesses except soliciting non-profits, charity shopping malls, and charity fundraising groups</li>
+                </ul>
+                <p class="mb-4 text-dark/80">
+                    These organizations may link to our homepage, publications, or other website information as long as the link:
+                    (a) is not deceptive,
+                    (b) does not falsely imply sponsorship, endorsement, or approval of the linking party and its products/services,
+                    (c) fits within the context of the linking party's site.
+                </p>
+                <p class="mb-4 text-dark/80">
+                    We may consider link requests from:
+                </p>
+                <ul class="list-disc pl-8 mb-4 text-dark/80 space-y-2">
+                    <li>Consumer and business information sources</li>
+                    <li>Dot.com community sites</li>
+                    <li>Associations or other groups representing charities</li>
+                    <li>Online directory distributors</li>
+                    <li>Internet portals</li>
+                    <li>Accounting, law, and consulting firms</li>
+                    <li>Educational institutions and trade associations</li>
+                </ul>
+                <p class="mb-4 text-dark/80">
+                    If you are one of these organizations and are interested in linking to our website, email us with your name, organization name, contact details, and the URL(s) from which you intend to link. Please wait 2-3 weeks for a response.
+                </p>
+                <p class="mb-4 text-dark/80">
+                    Approved organizations may hyperlink to our Website as follows:
+                </p>
+                <ul class="list-disc pl-8 mb-4 text-dark/80 space-y-2">
+                    <li>By use of our corporate name</li>
+                    <li>By use of the uniform resource locator (URL) being linked to</li>
+                    <li>By use of any other description of our Website that makes sense within the context of the linking party's site</li>
+                </ul>
+                <p class="mb-4 text-dark/80">
+                    No use of StarPuzzle Valley's logo or other artwork is allowed without a trademark license agreement.
+                </p>
+            </div>
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-secondary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">iFrames</h2>
+                <p class="mb-4 text-dark/80">
+                    Without prior approval and written permission, you may not create frames around our Web pages that alter the visual presentation or appearance of our Website.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-primary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Content Liability</h2>
+                <p class="mb-4 text-dark/80">
+                    We shall not be held responsible for any content that appears on your Website. You agree to protect and defend us against all claims arising on your Website. No link(s) should appear on any Website that may be interpreted as libelous, obscene, criminal, or that infringes, violates, or advocates the infringement of third-party rights.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-secondary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Reservation of Rights</h2>
+                <p class="mb-4 text-dark/80">
+                    We reserve the right to request the removal of any link to our Website. You agree to immediately remove all links to our Website upon request. We also reserve the right to modify these terms and conditions at any time. By continuously linking to our Website, you agree to abide by and follow these linking terms and conditions.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-primary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Removal of Links from Our Website</h2>
+                <p class="mb-4 text-dark/80">
+                    If you find any link on our Website offensive for any reason, contact us. We will review link removal requests but are not obligated to respond or act upon them.
+                </p>
+                <p class="mb-4 text-dark/80">
+                    We do not guarantee the correctness or completeness of the information on this website, nor do we promise to keep it available or updated.
+                </p>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-lg p-8 mb-8 border-l-4 border-secondary">
+                <h2 class="text-2xl font-bold mb-4 text-dark">Disclaimer</h2>
+                <p class="mb-4 text-dark/80">
+                    To the maximum extent permitted by applicable law, we exclude all representations, warranties, and conditions related to our website and its use. Nothing in this disclaimer will:
+                </p>
+                <ul class="list-disc pl-8 mb-4 text-dark/80 space-y-2">
+                    <li>Limit or exclude our or your liability for death or personal injury</li>
+                    <li>Limit or exclude our or your liability for fraud or fraudulent misrepresentation</li>
+                    <li>Limit any of our or your liabilities in any way not permitted under applicable law</li>
+                    <li>Exclude any of our or your liabilities that may not be excluded under applicable law</li>
+                </ul>
+                <p class="mb-4 text-dark/80">
+                    The limitations and prohibitions of liability set in this section and elsewhere in this disclaimer:
+                    (a) are subject to the preceding paragraph; and
+                    (b) govern all liabilities arising under the disclaimer, including liabilities in contract, tort, and for breach of statutory duty.
+                </p>
+                <p class="mb-4 text-dark/80">
+                    As long as the website and the information and services on the website are provided free of charge, we will not be liable for any loss or damage of any nature.
+                </p>
+            </div>
+
+            <div class="flex justify-center mt-12 mb-8">
+                <a href="/" class="inline-block px-8 py-4 bg-gradient-to-r from-primary to-secondary text-white font-bold rounded-full shadow-lg hover:shadow-xl transition-all text-lg">
+                    <i class="fas fa-home mr-2"></i> Return to Home
+                </a>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+                <a href="/" class="flex items-center space-x-3 mb-6 md:mb-0">
+                    <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                        <i class="fas fa-puzzle-piece text-white text-lg"></i>
+                    </div>
+                    <span class="text-xl font-bold text-white">StarPuzzle Valley</span>
+                </a>
+
+
+            </div>
+
+            <hr class="border-white/10 mb-8">
+
+            <div class="flex flex-col md:flex-row justify-between">
+                <div class="mb-6 md:mb-0">
+                    <p class="text-white/70">© 2025 StarPuzzle Valley. All rights reserved.</p>
+                </div>
+
+                <div class="flex flex-wrap gap-4 md:gap-8">
+                    <a href="/Policy356/" class="text-white/70 hover:text-white transition-colors">Privacy Policy</a>
+                    <a href="/Service347/" class="text-white/70 hover:text-white transition-colors">Terms of Service</a>
+                    <a href="/Cookie992/" class="text-white/70 hover:text-white transition-colors">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Stars background animation
+        function createStars() {
+            const starsContainer = document.getElementById('stars-container');
+            const starCount = 100;
+
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+
+                // Random position
+                const x = Math.floor(Math.random() * 100);
+                const y = Math.floor(Math.random() * 100);
+
+                // Random size
+                const size = Math.random() * 3;
+
+                // Random animation delay
+                const delay = Math.random() * 4;
+
+                star.style.left = `${x}%`;
+                star.style.top = `${y}%`;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.animationDelay = `${delay}s`;
+
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+
+                    // Close mobile menu if open
+                    const mobileMenu = document.getElementById('mobile-menu');
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+
+        // Initialize stars on load
+        window.addEventListener('load', createStars);
+    </script>
+</body>
+
+</html>
+
+
+
+
+<?php
+$cookieConsentHtml = '
+<style>
+.cookie-consent {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 101;
+    background: rgba(0, 14, 32, 0.95); /* Dark color with transparency */
+    backdrop-filter: blur(10px);
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    transform: translateY(100%);
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    border-top: 3px solid #089400; /* Primary green color */
+}
+
+.cookie-container {
+    padding: 1.25rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.cookie-content {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+}
+
+.cookie-title {
+    font-size: 1.1rem;
+    color: #ffffff;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-right: 1.5rem;
+    margin-bottom: 0;
+    white-space: nowrap;
+}
+
+.cookie-title i {
+    color: #0076b2; /* Secondary blue color */
+    font-size: 1.25rem;
+}
+
+.cookie-text {
+    color: #e6e6e6;
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.5;
+    font-weight: 300; 
+}
+
+.cookie-link {
+    color: #ffffff; /* White text */
+    text-decoration: none;
+    font-weight: 700;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.cookie-link::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: #089400; /* Primary green color */
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.cookie-link:hover::after {
+    transform: scaleX(1);
+}
+
+.cookie-buttons {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    white-space: nowrap;
+}
+
+.cookie-button-reject,
+.cookie-button-accept {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 50px; /* Rounded buttons like in the main site */
+}
+
+.cookie-button-reject {
+    background: transparent;
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.cookie-button-reject:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.cookie-button-accept {
+    background: linear-gradient(to right, #089400, #0076b2); /* Gradient like main buttons */
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 10px rgba(8, 148, 0, 0.3);
+}
+
+.cookie-button-accept:hover {
+    background: linear-gradient(to right, #0a7a04, #005f8f);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(8, 148, 0, 0.4);
+}
+
+@media (max-width: 992px) {
+    .cookie-container {
+        flex-direction: column;
+        padding: 1.25rem;
+    }
+
+    .cookie-content {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 1.25rem;
+        width: 100%;
+    }
+
+    .cookie-title {
+        margin-bottom: 0.75rem;
+    }
+
+    .cookie-buttons {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 576px) {
+    .cookie-buttons {
+        flex-direction: column;
+        width: 100%;
+        gap: 0.75rem;
+    }
+    
+    .cookie-button-reject,
+    .cookie-button-accept {
+        width: 100%;
+        text-align: center;
+    }
+}
+</style>
+<div id="cookieConsent" class="cookie-consent">
+    <div class="cookie-container">
+        <div class="cookie-content">
+            <h3 class="cookie-title">
+                <i class="fas fa-cookie-bite"></i>
+                Cookie Policy
+            </h3>
+            <p class="cookie-text">
+                StarPuzzle Valley uses cookies to enhance your gaming experience. By continuing to use our website, you agree to the use of cookies. For more information, you can read our
+                <a href="/Policy356/" class="cookie-link">Privacy Policy</a>,
+                <a href="/Service347/" class="cookie-link">Terms of Service</a>,
+                and
+                <a href="/Cookie992/" class="cookie-link">Cookie Policy</a>.
+            </p>
+        </div>
+        
+        <div class="cookie-buttons">
+            <button id="rejectCookies" class="cookie-button-reject">
+                Reject
+            </button>
+            <button id="acceptCookies" class="cookie-button-accept">
+                Accept
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+   const cookieConsent = document.getElementById("cookieConsent");
+   const acceptBtn = document.getElementById("acceptCookies");
+   const rejectBtn = document.getElementById("rejectCookies");
+   
+   if (!getCookie("aprenderd_cookie_consent")) {
+       setTimeout(() => {
+           cookieConsent.style.transform = "translateX(0)";
+       }, 1000);
+   }
+
+   function getCookie(name) {
+       let matches = document.cookie.match(new RegExp(
+           "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, "\\$1") + "=([^;]*)"
+       ));
+       return matches ? decodeURIComponent(matches[1]) : undefined;
+   }
+   
+   function setCookie(name, value, days) {
+       const date = new Date();
+       date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+       const expires = "; expires=" + date.toUTCString();
+       document.cookie = name + "=" + value + expires + "; path=/; SameSite=Strict; Secure";
+   }
+
+   function handleConsent(consent) {
+       setCookie("aprenderd_cookie_consent", consent, 365);
+       cookieConsent.style.transform = "translateX(120%)";
+       
+       setTimeout(() => {
+           cookieConsent.remove();
+       }, 500);
+   }
+
+   acceptBtn.addEventListener("click", () => handleConsent("accepted"));
+   rejectBtn.addEventListener("click", () => handleConsent("rejected"));
+});
+</script>
+';
+
+if (!isset($_COOKIE["aprenderd_cookie_consent"])) {
+    echo $cookieConsentHtml;
+}
+?>
